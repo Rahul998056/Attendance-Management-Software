@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neo Attendance Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Material Icons for the UI -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="material-icons-round">token</span>
+                    <h2>Neo</h2>
+                </div>
+            </div>
+
+            <div class="sidebar-menu">
+                <div class="menu-category">Main</div>
+                <a href="#" class="menu-item active">
+                    <span class="material-icons-round">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <span class="material-icons-round">apps</span>
+                    <span>Apps</span>
+                </a>
+
+                <div class="menu-category">Employee</div>
+                <a href="#" class="menu-item">
+                    <span class="material-icons-round">people</span>
+                    <span>Employees</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <span class="material-icons-round">person</span>
+                    <span>Clients</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <span class="material-icons-round">work</span>
+                    <span>Projects</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <span class="material-icons-round">confirmation_number</span>
+                    <span>Tickets</span>
+                </a>
+
+                <div class="menu-category">HR</div>
+                <a href="#" class="menu-item">
+                    <span class="material-icons-round">account_balance_wallet</span>
+                    <span>Accounts</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <span class="material-icons-round">monetization_on</span>
+                    <span>Payroll</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <span class="material-icons-round">policy</span>
+                    <span>Policies</span>
+                </a>
+                <a href="#" class="menu-item" onclick="showSection('view-reports')">
+                    <!-- Re-linking report logic later -->
+                    <span class="material-icons-round">assessment</span>
+                    <span>Reports</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <span class="material-icons-round">trending_up</span>
+                    <span>Performance</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <span class="material-icons-round">flag</span>
+                    <span>Goals</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <span class="material-icons-round">model_training</span>
+                    <span>Training</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <span class="material-icons-round">publish</span>
+                    <span>Promotion</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <button class="menu-toggle">
+                    <span class="material-icons-round">menu</span>
+                </button>
+                <div class="header-right">
+                    <div class="search-bar">
+                        <input type="text" placeholder="search here...">
+                        <span class="material-icons-round">search</span>
+                    </div>
+                    <div class="header-actions">
+                        <button class="icon-btn"><span class="material-icons-round">notifications</span></button>
+                        <button class="icon-btn"><span class="material-icons-round">chat</span></button>
+                        <div class="user-profile">
+                            <img src="https://ui-avatars.com/api/?name=Admin&background=random" alt="Admin">
+                            <span>Admin</span>
+                            <span class="material-icons-round">expand_more</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-container">
+                <div class="page-title">
+                    <h1>Attendance</h1>
+                    <div class="breadcrumb">Dashboard / Attendance</div>
+                </div>
+
+                <!-- Top Row Widgets -->
+                <div class="widgets-grid">
+                    <!-- Timesheet Card -->
+                    <div class="card timesheet-card">
+                        <div class="card-header">
+                            <h3>Timesheet</h3>
+                            <span class="date">11 Mar 2019</span>
+                        </div>
+                        <div class="punch-status">
+                            <p>Punch In at</p>
+                            <span>Wed, 11th Mar 2019 10.00 AM</span>
+                        </div>
+                        <div class="timer-circle">
+                            <svg viewBox="0 0 36 36" class="circular-chart">
+                                <path class="circle-bg" d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <path class="circle" stroke-dasharray="30, 100" d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <text x="18" y="20.35" class="percentage">3.45 hrs</text>
+                            </svg>
+                        </div>
+                        <button class="btn-punch">Punch Out</button>
+                        <div class="timesheet-footer">
+                            <div class="stat">
+                                <span class="label">BREAK</span>
+                                <span class="value">1.21 hrs</span>
+                            </div>
+                            <div class="stat">
+                                <span class="label">Overtime</span>
+                                <span class="value">3 hrs</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Card -->
+                    <div class="card statistics-card">
+                        <div class="card-header">
+                            <h3>Statistics</h3>
+                        </div>
+                        <div class="stat-bars">
+                            <div class="stat-bar-item">
+                                <div class="stat-info">
+                                    <span>Today</span>
+                                    <span>3.45 / 8 hrs</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 43%; background-color: #03dac6;"></div>
+                                </div>
+                            </div>
+                            <div class="stat-bar-item">
+                                <div class="stat-info">
+                                    <span>This Week</span>
+                                    <span>28 / 40 hrs</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 70%; background-color: #ff9800;"></div>
+                                </div>
+                            </div>
+                            <div class="stat-bar-item">
+                                <div class="stat-info">
+                                    <span>This Month</span>
+                                    <span>90 / 160 hrs</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 56%; background-color: #2196f3;"></div>
+                                </div>
+                            </div>
+                            <div class="stat-bar-item">
+                                <div class="stat-info">
+                                    <span>Remaining</span>
+                                    <span>90 / 160 hrs</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 56%; background-color: #f44336;"></div>
+                                </div>
+                            </div>
+                            <div class="stat-bar-item">
+                                <div class="stat-info">
+                                    <span>Overtime</span>
+                                    <span>5 hrs</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 20%; background-color: #cddc39;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Today Activity Card -->
+                    <div class="card activity-card">
+                        <div class="card-header">
+                            <h3>Today Activity</h3>
+                        </div>
+                        <div class="activity-timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-icon"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Punch In at</div>
+                                    <div class="timeline-time"><span class="material-icons-round tiny">schedule</span>
+                                        10.00 AM</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-icon"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Punch Out at</div>
+                                    <div class="timeline-time"><span class="material-icons-round tiny">schedule</span>
+                                        11.00 AM</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-icon"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Punch In at</div>
+                                    <div class="timeline-time"><span class="material-icons-round tiny">schedule</span>
+                                        11.30 AM</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-icon"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">Punch Out at</div>
+                                    <div class="timeline-time"><span class="material-icons-round tiny">schedule</span>
+                                        01.30 PM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Row Widgets -->
+                <div class="widgets-grid-bottom">
+                    <!-- Attendance List -->
+                    <div class="card attendance-list-card">
+                        <div class="card-header">
+                            <h3>Attendance List</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>S. No</th>
+                                        <th>Date</th>
+                                        <th>Punch In</th>
+                                        <th>Punch Out</th>
+                                        <th>Production</th>
+                                        <th>Break</th>
+                                        <th>Overtime</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>19 Feb 2019</td>
+                                        <td>10 AM</td>
+                                        <td>7 PM</td>
+                                        <td>9 hrs</td>
+                                        <td>1 hrs</td>
+                                        <td>2 hrs</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>20 Feb 2019</td>
+                                        <td>10 AM</td>
+                                        <td>7 PM</td>
+                                        <td>9 hrs</td>
+                                        <td>1 hrs</td>
+                                        <td>0 hrs</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>21 Feb 2019</td>
+                                        <td>10 AM</td>
+                                        <td>7 PM</td>
+                                        <td>9 hrs</td>
+                                        <td>1 hrs</td>
+                                        <td>0 hrs</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Daily Records Chart -->
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3>Daily Records</h3>
+                        </div>
+                        <div class="chart-box">
+                            <!-- Simple CSS Bar Chart Mockup -->
+                            <div class="bar-chart">
+                                <div class="bar-col">
+                                    <div class="bar" style="height: 60%; background-color: #2196f3;"></div>
+                                    <span class="label">29</span>
+                                </div>
+                                <div class="bar-col">
+                                    <div class="bar" style="height: 40%; background-color: #03dac6;"></div>
+                                    <span class="label">30</span>
+                                </div>
+                                <div class="bar-col">
+                                    <div class="bar" style="height: 80%; background-color: #2196f3;"></div>
+                                    <span class="label">01</span>
+                                </div>
+                                <div class="bar-col">
+                                    <div class="bar" style="height: 30%; background-color: #03dac6;"></div>
+                                    <span class="label">02</span>
+                                </div>
+                                <div class="bar-col">
+                                    <div class="bar" style="height: 90%; background-color: #2196f3;"></div>
+                                    <span class="label">03</span>
+                                </div>
+                                <div class="bar-col">
+                                    <div class="bar" style="height: 50%; background-color: #03dac6;"></div>
+                                    <span class="label">04</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
