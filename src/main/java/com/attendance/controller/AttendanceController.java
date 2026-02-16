@@ -55,9 +55,24 @@ public class AttendanceController {
         return attendanceService.getEmployeeAttendance(employeeId);
     }
 
+    // Get today's attendance for a specific employee
+    @GetMapping("/attendance/employee/{employeeId}/date/{date}")
+    public Attendance getTodayAttendance(
+            @PathVariable Long employeeId,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return attendanceService.getTodayAttendance(employeeId, date)
+                .orElse(null); // Return null or 404 depending on preference, frontend handles null
+    }
+
     // Get all attendance records (for initial view or unfiltered)
     @GetMapping("/attendance")
     public List<Attendance> getAllAttendance() {
         return attendanceService.getAllAttendance();
+    }
+
+    // Delete attendance record
+    @DeleteMapping("/attendance/{id}")
+    public void deleteAttendance(@PathVariable Long id) {
+        attendanceService.deleteAttendance(id);
     }
 }
