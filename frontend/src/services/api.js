@@ -2,14 +2,22 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
 // Helper function for API calls
+import { getAuthToken } from './auth';
+
 const apiCall = async (endpoint, options = {}) => {
     try {
+        const { headers: optionHeaders, ...restOptions } = options;
+        const token = getAuthToken();
+        const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
+
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            cache: 'no-store',
+            ...restOptions,
             headers: {
                 'Content-Type': 'application/json',
-                ...options.headers,
+                ...(optionHeaders || {}),
+                ...authHeader,
             },
-            ...options,
         });
 
         if (!response.ok) {
@@ -17,7 +25,16 @@ const apiCall = async (endpoint, options = {}) => {
             throw new Error(error.message || `HTTP ${response.status}`);
         }
 
-        return await response.json();
+        // Some endpoints (DELETE/204) return no content. Avoid JSON parse errors.
+        if (response.status === 204) return null;
+
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            const text = await response.text();
+            return text ? JSON.parse(text) : null;
+        }
+
+        return await response.text();
     } catch (error) {
         console.error(`API Error [${endpoint}]:`, error);
         throw error;
@@ -87,21 +104,16 @@ export const userAPI = {
     }),
 };
 
-// ==================== BREAK API ====================
-export const breakAPI = {
-    getAll: () => apiCall('/breaks'),
-    getById: (id) => apiCall(`/breaks/${id}`),
-    getByAttendance: (attendanceId) => apiCall(`/breaks/attendance/${attendanceId}`),
-    getActive: () => apiCall('/breaks/active'),
-
-    // Start break
-    start: (attendanceId) => apiCall(`/breaks/start/${attendanceId}`, { method: 'POST' }),
-
-    // End break
-    end: (breakId) => apiCall(`/breaks/end/${breakId}`, { method: 'PUT' }),
-
-    // Get total break duration
-    getTotalDuration: (attendanceId) => apiCall(`/breaks/attendance/${attendanceId}/total-duration`),
+// ==================== ADMIN AUTH API ====================
+export const adminAuthAPI = {
+    signup: (adminDetails) => apiCall('/admin-auth/signup', {
+        method: 'POST',
+        body: JSON.stringify(adminDetails)
+    }),
+    login: (credentials) => apiCall('/admin-auth/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials)
+    }),
 };
 
 // ==================== PROJECT API ====================
@@ -188,15 +200,24 @@ export const roleAPI = {
     initialize: () => apiCall('/roles/initialize', { method: 'POST' }),
 };
 
+// ==================== DASHBOARD API ====================
+export const dashboardAPI = {
+    // Persistent entries/notes for the Dashboard UI
+    getEntries: () => apiCall('/dashboard/entries'),
+    createEntry: (entry) => apiCall('/dashboard/entries', { method: 'POST', body: JSON.stringify(entry) }),
+    deleteEntry: (id) => apiCall(`/dashboard/entries/${id}`, { method: 'DELETE' }),
+};
+
 // Export all APIs
 export default {
     attendance: attendanceAPI,
     employee: employeeAPI,
     user: userAPI,
-    break: breakAPI,
+    adminAuth: adminAuthAPI,
     project: projectAPI,
     employeeProject: employeeProjectAPI,
     payroll: payrollAPI,
     leave: leaveAPI,
     role: roleAPI,
+    dashboard: dashboardAPI,
 };

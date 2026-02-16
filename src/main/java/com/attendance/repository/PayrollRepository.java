@@ -1,5 +1,6 @@
 package com.attendance.repository;
 
+import com.attendance.entity.AdminCredential;
 import com.attendance.entity.Employee;
 import com.attendance.entity.Payroll;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -77,4 +78,11 @@ public interface PayrollRepository extends JpaRepository<Payroll, Long> {
      * @return List of payroll records ordered by salary
      */
     List<Payroll> findByMonthAndYearOrderByNetSalaryDesc(String month, Integer year);
+    
+    // Admin-filtered queries
+    List<Payroll> findByAdmin(AdminCredential admin);
+    
+    List<Payroll> findByAdminAndMonthAndYear(AdminCredential admin, String month, Integer year);
+    
+    Optional<Payroll> findByAdminAndId(AdminCredential admin, Long id);
 }

@@ -1,5 +1,6 @@
 package com.attendance.repository;
 
+import com.attendance.entity.AdminCredential;
 import com.attendance.entity.Employee;
 import com.attendance.entity.Leave;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LeaveRepository extends JpaRepository<Leave, Long> {
@@ -99,4 +101,22 @@ public interface LeaveRepository extends JpaRepository<Leave, Long> {
     @Query("SELECT COALESCE(SUM(DATEDIFF(l.endDate, l.startDate) + 1), 0) FROM Leave l " +
             "WHERE l.employee = :employee AND l.status = 'APPROVED' AND YEAR(l.startDate) = :year")
     long countApprovedLeaveDaysForYear(@Param("employee") Employee employee, @Param("year") int year);
+    
+    // Admin-filtered queries
+    List<Leave> findByAdmin(AdminCredential admin);
+    
+    List<Leave> findByAdminAndStatus(AdminCredential admin, String status);
+    
+    Optional<Leave> findByAdminAndId(AdminCredential admin, Long id);
+
+        // Additional admin-scoped helpers
+        List<Leave> findByAdminAndEmployee(AdminCredential admin, Employee employee);
+
+        List<Leave> findByAdminAndEmployeeAndStatus(AdminCredential admin, Employee employee, String status);
+
+        List<Leave> findByAdminAndLeaveType(AdminCredential admin, String leaveType);
+
+        default List<Leave> findPendingLeavesForAdmin(AdminCredential admin) {
+                return findByAdminAndStatus(admin, "PENDING");
+        }
 }

@@ -15,6 +15,9 @@ public class RoleService {
     @Autowired
     private RoleRepository roleRepository;
 
+    @Autowired
+    private com.attendance.repository.UserRepository userRepository;
+
     /**
      * Get all roles
      * 
@@ -90,6 +93,12 @@ public class RoleService {
      */
     public void deleteRole(Long id) {
         Role role = getRoleById(id);
+        // Prevent deletion when users still reference this role
+        java.util.List<com.attendance.entity.User> usersWithRole = userRepository.findByRole(role);
+        if (usersWithRole != null && !usersWithRole.isEmpty()) {
+            throw new ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,
+                    "Cannot delete role: there are users assigned to this role");
+        }
         roleRepository.delete(role);
     }
 

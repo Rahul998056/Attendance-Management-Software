@@ -97,8 +97,8 @@ const Roles = () => {
             </div>
 
             {showModal && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                    <div className="card" style={{ width: '350px', position: 'relative' }}>
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+                    <div className="card" style={{ width: '100%', maxWidth: '350px', position: 'relative' }}>
                         <button onClick={() => setShowModal(false)} style={{ position: 'absolute', right: '15px', top: '15px', border: 'none', background: 'none' }}><X size={18} /></button>
                         <h2 style={{ marginBottom: '15px' }}>New Role</h2>
                         <form onSubmit={handleSubmit}>

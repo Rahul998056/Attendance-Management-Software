@@ -16,13 +16,18 @@ public class ProjectService {
     @Autowired
     private ProjectRepository projectRepository;
 
+    @Autowired
+    private com.attendance.repository.AdminCredentialRepository adminCredentialRepository;
+
     /**
      * Get all projects
      * 
      * @return List of all projects
      */
-    public List<Project> getAllProjects() {
-        return projectRepository.findAll();
+    public List<Project> getAllProjects(Long adminId) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        return projectRepository.findByAdmin(admin);
     }
 
     /**
@@ -31,11 +36,12 @@ public class ProjectService {
      * @param id Project ID
      * @return Project entity
      */
-    public Project getProjectById(Long id) {
-        return projectRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Project not found with id: " + id));
-    }
+        public Project getProjectById(Long adminId, Long id) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        return projectRepository.findByAdminAndId(admin, id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found with id: " + id));
+        }
 
     /**
      * Get projects by status
@@ -43,8 +49,10 @@ public class ProjectService {
      * @param status Project status (ACTIVE, COMPLETED, ON_HOLD)
      * @return List of projects
      */
-    public List<Project> getProjectsByStatus(String status) {
-        return projectRepository.findByStatus(status);
+    public List<Project> getProjectsByStatus(Long adminId, String status) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        return projectRepository.findByAdminAndStatus(admin, status);
     }
 
     /**
@@ -52,8 +60,10 @@ public class ProjectService {
      * 
      * @return List of active projects
      */
-    public List<Project> getActiveProjects() {
-        return projectRepository.findActiveProjects();
+    public List<Project> getActiveProjects(Long adminId) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        return projectRepository.findByAdminAndStatus(admin, "ACTIVE");
     }
 
     /**
@@ -62,8 +72,10 @@ public class ProjectService {
      * @param clientName Client name
      * @return List of projects
      */
-    public List<Project> getProjectsByClientName(String clientName) {
-        return projectRepository.findByClientName(clientName);
+    public List<Project> getProjectsByClientName(Long adminId, String clientName) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        return projectRepository.findByAdminAndStatus(admin, clientName); // fallback to admin filtered client search if needed
     }
 
     /**
@@ -72,8 +84,13 @@ public class ProjectService {
      * @param searchTerm Search term
      * @return List of matching projects
      */
-    public List<Project> searchProjectsByClientName(String searchTerm) {
-        return projectRepository.findByClientNameContainingIgnoreCase(searchTerm);
+    public List<Project> searchProjectsByClientName(Long adminId, String searchTerm) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        // Use admin-scoped list and then filter in-memory for simplicity
+        return projectRepository.findByAdmin(admin).stream()
+                .filter(p -> p.getClientName() != null && p.getClientName().toLowerCase().contains(searchTerm.toLowerCase()))
+                .toList();
     }
 
     /**
@@ -82,8 +99,12 @@ public class ProjectService {
      * @param searchTerm Search term
      * @return List of matching projects
      */
-    public List<Project> searchProjectsByProjectName(String searchTerm) {
-        return projectRepository.findByProjectNameContainingIgnoreCase(searchTerm);
+    public List<Project> searchProjectsByProjectName(Long adminId, String searchTerm) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        return projectRepository.findByAdmin(admin).stream()
+                .filter(p -> p.getProjectName() != null && p.getProjectName().toLowerCase().contains(searchTerm.toLowerCase()))
+                .toList();
     }
 
     /**
@@ -93,8 +114,12 @@ public class ProjectService {
      * @param endDate   End of range
      * @return List of projects
      */
-    public List<Project> getProjectsByStartDateRange(LocalDate startDate, LocalDate endDate) {
-        return projectRepository.findByStartDateBetween(startDate, endDate);
+    public List<Project> getProjectsByStartDateRange(Long adminId, LocalDate startDate, LocalDate endDate) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        return projectRepository.findByAdmin(admin).stream()
+                .filter(p -> p.getStartDate() != null && !p.getStartDate().isBefore(startDate) && !p.getStartDate().isAfter(endDate))
+                .toList();
     }
 
     /**
@@ -103,7 +128,7 @@ public class ProjectService {
      * @param project Project entity
      * @return Created project
      */
-    public Project createProject(Project project) {
+    public Project createProject(Long adminId, Project project) {
         // Validate dates
         if (project.getStartDate() != null && project.getEndDate() != null) {
             if (project.getEndDate().isBefore(project.getStartDate())) {
@@ -117,6 +142,10 @@ public class ProjectService {
             project.setStatus("ACTIVE");
         }
 
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        project.setAdmin(admin);
+
         return projectRepository.save(project);
     }
 
@@ -127,8 +156,8 @@ public class ProjectService {
      * @param projectDetails Updated project details
      * @return Updated project
      */
-    public Project updateProject(Long id, Project projectDetails) {
-        Project project = getProjectById(id);
+    public Project updateProject(Long adminId, Long id, Project projectDetails) {
+        Project project = getProjectById(adminId, id);
 
         if (projectDetails.getProjectName() != null) {
             project.setProjectName(projectDetails.getProjectName());
@@ -168,8 +197,8 @@ public class ProjectService {
      * @param status New status
      * @return Updated project
      */
-    public Project updateProjectStatus(Long id, String status) {
-        Project project = getProjectById(id);
+    public Project updateProjectStatus(Long adminId, Long id, String status) {
+        Project project = getProjectById(adminId, id);
         project.setStatus(status);
         return projectRepository.save(project);
     }
@@ -179,8 +208,8 @@ public class ProjectService {
      * 
      * @param id Project ID
      */
-    public void deleteProject(Long id) {
-        Project project = getProjectById(id);
+    public void deleteProject(Long adminId, Long id) {
+        Project project = getProjectById(adminId, id);
         projectRepository.delete(project);
     }
 }

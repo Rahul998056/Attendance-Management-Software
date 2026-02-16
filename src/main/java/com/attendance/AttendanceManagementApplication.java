@@ -9,7 +9,6 @@ public class AttendanceManagementApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(AttendanceManagementApplication.class, args);
 	}
-
 	@org.springframework.context.annotation.Bean
 	public org.springframework.boot.CommandLineRunner commandLineRunner(org.springframework.context.ApplicationContext ctx) {
 		return args -> {

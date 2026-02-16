@@ -106,6 +106,12 @@ public class UserService {
         // TODO: Hash password before saving (implement with Spring Security)
         // user.setPassword(passwordEncoder.encode(user.getPassword()));
 
+        // Validate role if provided (avoid FK constraint 500s)
+        if (user.getRole() != null && user.getRole().getId() != null) {
+            Role role = roleService.getRoleById(user.getRole().getId());
+            user.setRole(role);
+        }
+
         return userRepository.save(user);
     }
 
@@ -143,7 +149,12 @@ public class UserService {
         }
 
         if (userDetails.getRole() != null) {
-            user.setRole(userDetails.getRole());
+            if (userDetails.getRole().getId() != null) {
+                Role role = roleService.getRoleById(userDetails.getRole().getId());
+                user.setRole(role);
+            } else {
+                user.setRole(userDetails.getRole());
+            }
         }
 
         if (userDetails.getIsActive() != null) {

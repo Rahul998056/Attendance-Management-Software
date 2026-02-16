@@ -21,20 +21,24 @@ const Employees = () => {
     });
 
     useEffect(() => {
-        fetchEmployees();
+        fetchEmployees(false);
+
+        // Keep UI in sync even if data changes outside the UI (e.g., DB edits)
+        const intervalId = setInterval(() => fetchEmployees(true), 15000);
+        return () => clearInterval(intervalId);
     }, []);
 
-    const fetchEmployees = async () => {
+    const fetchEmployees = async (silent = false) => {
         try {
-            setLoading(true);
+            if (!silent) setLoading(true);
             const data = await api.employee.getAll();
             setEmployees(Array.isArray(data) ? data : []);
             setError(null);
         } catch (err) {
             console.error('Error fetching employees:', err);
-            setError(err.message);
+            if (!silent) setError(err.message);
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
 
@@ -46,7 +50,7 @@ const Employees = () => {
         e.preventDefault();
         try {
             // Send data to backend
-            await api.employee.create(formData);
+            const created = await api.employee.create(formData);
 
             // Close modal and clear form
             setShowModal(false);
@@ -60,8 +64,12 @@ const Employees = () => {
                 joiningDate: new Date().toISOString().split('T')[0]
             });
 
-            // Refresh the list to see the new entry!
-            fetchEmployees();
+            // Update UI immediately, then sync from backend
+            if (created && created.id) {
+                setEmployees((prev) => [created, ...prev]);
+            } else {
+                fetchEmployees(true);
+            }
             alert('Employee Added Successfully to Database!');
         } catch (err) {
             alert('Error adding employee: ' + err.message);
@@ -72,7 +80,7 @@ const Employees = () => {
         if (window.confirm('Are you sure you want to delete this employee? This will reflect in the Database and UI immediately.')) {
             try {
                 await api.employee.delete(id);
-                fetchEmployees(); // Refresh list
+                setEmployees((prev) => prev.filter((emp) => emp.id !== id));
                 alert('Employee Deleted Successfully!');
             } catch (err) {
                 alert('Error deleting employee: ' + err.message);
@@ -252,7 +260,7 @@ const Employees = () => {
                                 ))}
                                 {filteredEmployees.length === 0 && (
                                     <tr>
-                                        <td colSpan="7" style={{ textAlign: 'center', padding: '30px', color: '#718096' }}>
+                                        <td colSpan="8" style={{ textAlign: 'center', padding: '30px', color: '#718096' }}>
                                             {searchTerm ? 'No employees found matching your search' : 'No employees found'}
                                         </td>
                                     </tr>

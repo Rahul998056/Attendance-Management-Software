@@ -137,10 +137,6 @@ function TimesheetCard() {
             </button>
             <div className="timesheet-footer">
                 <div className="stat">
-                    <span className="label">BREAK</span>
-                    <span className="value">1.21 hrs</span>
-                </div>
-                <div className="stat">
                     <span className="label">Overtime</span>
                     <span className="value">3 hrs</span>
                 </div>
@@ -261,7 +257,6 @@ function AttendanceList() {
                             <th>Punch In</th>
                             <th>Punch Out</th>
                             <th>Production</th>
-                            <th>Break</th>
                             <th>Overtime</th>
                         </tr>
                     </thead>
@@ -272,7 +267,6 @@ function AttendanceList() {
                             <td>10 AM</td>
                             <td>7 PM</td>
                             <td>9 hrs</td>
-                            <td>1 hrs</td>
                             <td>2 hrs</td>
                         </tr>
                         <tr>
@@ -281,7 +275,6 @@ function AttendanceList() {
                             <td>10 AM</td>
                             <td>7 PM</td>
                             <td>9 hrs</td>
-                            <td>1 hrs</td>
                             <td>0 hrs</td>
                         </tr>
                         <tr>
@@ -290,7 +283,6 @@ function AttendanceList() {
                             <td>10 AM</td>
                             <td>7 PM</td>
                             <td>9 hrs</td>
-                            <td>1 hrs</td>
                             <td>0 hrs</td>
                         </tr>
                     </tbody>
