@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Tester - Attendance Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h2 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: #667eea;
+        }
+
+        .btn-success {
+            background: #48bb78;
+        }
+
+        .btn-warning {
+            background: #ed8936;
+        }
+
+        .btn-danger {
+            background: #f56565;
+        }
+
+        .btn-info {
+            background: #4299e1;
+        }
+
+        .output {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .success {
+            color: #48bb78;
+        }
+
+        .error {
+            color: #f56565;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status.online {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status.offline {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        input {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚀 API Tester</h1>
+        <p class="subtitle">Attendance Management System - Backend API Testing Tool</p>
+
+        <div class="section">
+            <h2>🔌 Connection Status <span id="status" class="status offline">Offline</span></h2>
+            <div class="button-group">
+                <button class="btn-info" onclick="checkConnection()">Check Connection</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔐 Initialize System</h2>
+            <div class="button-group">
+                <button class="btn-primary" onclick="initializeRoles()">1. Initialize Roles</button>
+                <button class="btn-primary" onclick="createUser()">2. Create Admin User</button>
+                <button class="btn-primary" onclick="createEmployee()">3. Create Employee</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⏰ Attendance Operations</h2>
+            <div class="button-group">
+                <input type="number" id="employeeId" placeholder="Employee ID" value="1" style="width: 120px;">
+                <button class="btn-success" onclick="punchIn()">Punch In</button>
+                <button class="btn-warning" onclick="punchOut()">Punch Out</button>
+                <button class="btn-info" onclick="getAttendance()">Get All Attendance</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>☕ Break Management</h2>
+            <div class="button-group">
+                <input type="number" id="attendanceId" placeholder="Attendance ID" value="1" style="width: 140px;">
+                <button class="btn-success" onclick="startBreak()">Start Break</button>
+                <input type="number" id="breakId" placeholder="Break ID" value="1" style="width: 100px;">
+                <button class="btn-warning" onclick="endBreak()">End Break</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📁 Projects</h2>
+            <div class="button-group">
+                <button class="btn-info" onclick="getProjects()">Get All Projects</button>
+                <button class="btn-success" onclick="createProject()">Create Sample Project</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💰 Payroll</h2>
+            <div class="button-group">
+                <input type="number" id="payrollEmployeeId" placeholder="Employee ID" value="1" style="width: 120px;">
+                <button class="btn-success" onclick="generatePayroll()">Generate Payroll (Feb 2026)</button>
+                <button class="btn-info" onclick="getPayroll()">Get All Payroll</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🏖️ Leave Management</h2>
+            <div class="button-group">
+                <button class="btn-success" onclick="createLeave()">Create Leave Request</button>
+                <button class="btn-info" onclick="getPendingLeaves()">Get Pending Leaves</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Output</h2>
+            <div id="output" class="output">Ready to test APIs...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+        let userId = null;
+        let employeeIdCreated = null;
+
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'success' ? '#48bb78' : type === 'error' ? '#f56565' : '#e2e8f0';
+            output.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        async function apiCall(endpoint, options = {}) {
+            try {
+                log(`📡 ${options.method || 'GET'} ${endpoint}...`);
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: { 'Content-Type': 'application/json' },
+                    ...options
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json().catch(() => response.text());
+                log(`✅ Success: ${JSON.stringify(data, null, 2)}`, 'success');
+                return data;
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        async function checkConnection() {
+            try {
+                await fetch(`${API_BASE}/roles`);
+                document.getElementById('status').className = 'status online';
+                document.getElementById('status').textContent = 'Online';
+                log('✅ Backend is online!', 'success');
+            } catch (error) {
+                document.getElementById('status').className = 'status offline';
+                document.getElementById('status').textContent = 'Offline';
+                log('❌ Backend is offline. Make sure it\'s running on port 8080.', 'error');
+            }
+        }
+
+        async function initializeRoles() {
+            await apiCall('/roles/initialize', { method: 'POST' });
+        }
+
+        async function createUser() {
+            const user = {
+                username: 'admin',
+                email: 'admin@company.com',
+                password: 'admin123',
+                role: { id: 1 },
+                isActive: true
+            };
+            const result = await apiCall('/users', {
+                method: 'POST',
+                body: JSON.stringify(user)
+            });
+            userId = result.id;
+            log(`💾 User ID saved: ${userId}`, 'success');
+        }
+
+        async function createEmployee() {
+            if (!userId) {
+                log('⚠️ Please create a user first!', 'error');
+                return;
+            }
+            const employee = {
+                user: { id: userId },
+                firstName: 'John',
+                lastName: 'Doe',
+                phone: '1234567890',
+                designation: 'Developer',
+                department: 'IT',
+                salary: 75000
+            };
+            const result = await apiCall('/employees', {
+                method: 'POST',
+                body: JSON.stringify(employee)
+            });
+            employeeIdCreated = result.id;
+            log(`💾 Employee ID saved: ${employeeIdCreated}`, 'success');
+        }
+
+        async function punchIn() {
+            const empId = document.getElementById('employeeId').value;
+            await apiCall(`/attendance/punch-in/${empId}`, { method: 'POST' });
+        }
+
+        async function punchOut() {
+            const empId = document.getElementById('employeeId').value;
+            await apiCall(`/attendance/punch-out/${empId}`, { method: 'PUT' });
+        }
+
+        async function getAttendance() {
+            await apiCall('/attendance');
+        }
+
+        async function startBreak() {
+            const attId = document.getElementById('attendanceId').value;
+            await apiCall(`/breaks/start/${attId}`, { method: 'POST' });
+        }
+
+        async function endBreak() {
+            const brkId = document.getElementById('breakId').value;
+            await apiCall(`/breaks/end/${brkId}`, { method: 'PUT' });
+        }
+
+        async function getProjects() {
+            await apiCall('/projects');
+        }
+
+        async function createProject() {
+            const project = {
+                projectName: 'E-Commerce Platform',
+                clientName: 'ABC Corp',
+                startDate: '2024-01-01',
+                endDate: '2024-12-31',
+                status: 'ACTIVE'
+            };
+            await apiCall('/projects', {
+                method: 'POST',
+                body: JSON.stringify(project)
+            });
+        }
+
+        async function generatePayroll() {
+            const empId = document.getElementById('payrollEmployeeId').value;
+            await apiCall(`/payroll/generate?employeeId=${empId}&month=February&year=2026`, {
+                method: 'POST'
+            });
+        }
+
+        async function getPayroll() {
+            await apiCall('/payroll');
+        }
+
+        async function createLeave() {
+            const leave = {
+                employee: { id: 1 },
+                leaveType: 'CASUAL',
+                startDate: '2026-03-01',
+                endDate: '2026-03-03',
+                reason: 'Family function',
+                status: 'PENDING'
+            };
+            await apiCall('/leaves', {
+                method: 'POST',
+                body: JSON.stringify(leave)
+            });
+        }
+
+        async function getPendingLeaves() {
+            await apiCall('/leaves/pending');
+        }
+
+        // Check connection on load
+        window.onload = () => {
+            checkConnection();
+        };
+    </script>
+</body>
+
+</html>
