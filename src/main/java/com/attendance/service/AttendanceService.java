@@ -113,8 +113,26 @@ public class AttendanceService {
         return employeeOpt.map(attendanceRepository::findByEmployee).orElse(Collections.emptyList());
     }
 
+    // Get today's attendance for a specific employee
+    public Optional<Attendance> getTodayAttendance(Long employeeId, LocalDate date) {
+        Optional<Employee> employeeOpt = employeeRepository.findById(employeeId);
+        if (employeeOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        List<Attendance> records = attendanceRepository.findByEmployeeAndAttendanceDate(employeeOpt.get(), date);
+        return records.stream().findFirst();
+    }
+
     // Get all attendance records
     public List<Attendance> getAllAttendance() {
         return attendanceRepository.findAll();
+    }
+
+    // Delete attendance record
+    public void deleteAttendance(Long id) {
+        if (!attendanceRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Attendance record not found: " + id);
+        }
+        attendanceRepository.deleteById(id);
     }
 }
