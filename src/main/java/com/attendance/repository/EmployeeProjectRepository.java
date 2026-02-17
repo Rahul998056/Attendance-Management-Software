@@ -1,5 +1,6 @@
 package com.attendance.repository;
 
+import com.attendance.entity.AdminCredential;
 import com.attendance.entity.Employee;
 import com.attendance.entity.EmployeeProject;
 import com.attendance.entity.Project;
@@ -81,4 +82,9 @@ public interface EmployeeProjectRepository extends JpaRepository<EmployeeProject
      * @return Number of projects assigned
      */
     long countByEmployee(Employee employee);
+    
+    // Admin-filtered queries
+    List<EmployeeProject> findByAdmin(AdminCredential admin);
+    
+    Optional<EmployeeProject> findByAdminAndId(AdminCredential admin, Long id);
 }

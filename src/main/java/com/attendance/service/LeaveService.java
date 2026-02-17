@@ -22,13 +22,18 @@ public class LeaveService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    @Autowired
+    private com.attendance.repository.AdminCredentialRepository adminCredentialRepository;
+
     /**
      * Get all leave requests
      * 
      * @return List of all leaves
      */
-    public List<Leave> getAllLeaves() {
-        return leaveRepository.findAll();
+    public List<Leave> getAllLeaves(Long adminId) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        return leaveRepository.findByAdmin(admin);
     }
 
     /**
@@ -37,11 +42,12 @@ public class LeaveService {
      * @param id Leave ID
      * @return Leave entity
      */
-    public Leave getLeaveById(Long id) {
-        return leaveRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Leave not found with id: " + id));
-    }
+        public Leave getLeaveById(Long adminId, Long id) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        return leaveRepository.findByAdminAndId(admin, id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Leave not found with id: " + id));
+        }
 
     /**
      * Get all leaves for an employee
@@ -49,12 +55,13 @@ public class LeaveService {
      * @param employeeId Employee ID
      * @return List of leaves
      */
-    public List<Leave> getLeavesByEmployeeId(Long employeeId) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Employee not found: " + employeeId));
-        return leaveRepository.findByEmployee(employee);
-    }
+        public List<Leave> getLeavesByEmployeeId(Long adminId, Long employeeId) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        Employee employee = employeeRepository.findByAdminAndId(admin, employeeId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found: " + employeeId));
+        return leaveRepository.findByAdminAndEmployee(admin, employee);
+        }
 
     /**
      * Get leaves by status
@@ -62,8 +69,10 @@ public class LeaveService {
      * @param status Leave status (PENDING, APPROVED, REJECTED)
      * @return List of leaves
      */
-    public List<Leave> getLeavesByStatus(String status) {
-        return leaveRepository.findByStatus(status);
+    public List<Leave> getLeavesByStatus(Long adminId, String status) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        return leaveRepository.findByAdminAndStatus(admin, status);
     }
 
     /**
@@ -71,8 +80,10 @@ public class LeaveService {
      * 
      * @return List of pending leaves
      */
-    public List<Leave> getPendingLeaves() {
-        return leaveRepository.findPendingLeaves();
+    public List<Leave> getPendingLeaves(Long adminId) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        return leaveRepository.findPendingLeavesForAdmin(admin);
     }
 
     /**
@@ -82,12 +93,13 @@ public class LeaveService {
      * @param status     Leave status
      * @return List of leaves
      */
-    public List<Leave> getLeavesByEmployeeAndStatus(Long employeeId, String status) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Employee not found: " + employeeId));
-        return leaveRepository.findByEmployeeAndStatus(employee, status);
-    }
+        public List<Leave> getLeavesByEmployeeAndStatus(Long adminId, Long employeeId, String status) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        Employee employee = employeeRepository.findByAdminAndId(admin, employeeId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found: " + employeeId));
+        return leaveRepository.findByAdminAndEmployeeAndStatus(admin, employee, status);
+        }
 
     /**
      * Get leaves by type
@@ -95,8 +107,10 @@ public class LeaveService {
      * @param leaveType Leave type (SICK, CASUAL, ANNUAL, UNPAID)
      * @return List of leaves
      */
-    public List<Leave> getLeavesByType(String leaveType) {
-        return leaveRepository.findByLeaveType(leaveType);
+    public List<Leave> getLeavesByType(Long adminId, String leaveType) {
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        return leaveRepository.findByAdminAndLeaveType(admin, leaveType);
     }
 
     /**
@@ -116,7 +130,7 @@ public class LeaveService {
      * @param leave Leave entity
      * @return Created leave
      */
-    public Leave createLeave(Leave leave) {
+    public Leave createLeave(Long adminId, Leave leave) {
         // Validate employee exists
         if (leave.getEmployee() == null || leave.getEmployee().getId() == null) {
             throw new ResponseStatusException(
@@ -155,6 +169,10 @@ public class LeaveService {
             leave.setStatus("PENDING");
         }
 
+        com.attendance.entity.AdminCredential admin = adminCredentialRepository.findById(adminId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Admin not found"));
+        leave.setAdmin(admin);
+
         return leaveRepository.save(leave);
     }
 
@@ -165,8 +183,8 @@ public class LeaveService {
      * @param leaveDetails Updated leave details
      * @return Updated leave
      */
-    public Leave updateLeave(Long id, Leave leaveDetails) {
-        Leave leave = getLeaveById(id);
+    public Leave updateLeave(Long adminId, Long id, Leave leaveDetails) {
+        Leave leave = getLeaveById(adminId, id);
 
         if (leaveDetails.getLeaveType() != null) {
             leave.setLeaveType(leaveDetails.getLeaveType());
@@ -205,8 +223,8 @@ public class LeaveService {
      * @param id Leave ID
      * @return Updated leave
      */
-    public Leave approveLeave(Long id) {
-        Leave leave = getLeaveById(id);
+    public Leave approveLeave(Long adminId, Long id) {
+        Leave leave = getLeaveById(adminId, id);
 
         if (!"PENDING".equals(leave.getStatus())) {
             throw new ResponseStatusException(
@@ -233,8 +251,8 @@ public class LeaveService {
      * @param id Leave ID
      * @return Updated leave
      */
-    public Leave rejectLeave(Long id) {
-        Leave leave = getLeaveById(id);
+    public Leave rejectLeave(Long adminId, Long id) {
+        Leave leave = getLeaveById(adminId, id);
 
         if (!"PENDING".equals(leave.getStatus())) {
             throw new ResponseStatusException(
@@ -250,8 +268,8 @@ public class LeaveService {
      * 
      * @param id Leave ID
      */
-    public void deleteLeave(Long id) {
-        Leave leave = getLeaveById(id);
+    public void deleteLeave(Long adminId, Long id) {
+        Leave leave = getLeaveById(adminId, id);
         leaveRepository.delete(leave);
     }
 

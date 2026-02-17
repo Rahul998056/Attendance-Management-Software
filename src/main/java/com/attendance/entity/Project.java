@@ -11,6 +11,10 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "admin_id", nullable = false)
+    private AdminCredential admin;
+
     @Column(name = "project_name", length = 150)
     private String projectName;
 
@@ -37,6 +41,14 @@ public class Project {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public AdminCredential getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(AdminCredential admin) {
+        this.admin = admin;
     }
 
     public String getProjectName() {

@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import {
-    LayoutDashboard,
     Users,
     Briefcase,
-    FileText,
     Clock,
     DollarSign,
     CheckCircle,
-    AlertCircle
+    Trash2,
+    Plus
 } from 'lucide-react';
 
 import PunchCard from '../components/PunchCard';
@@ -25,6 +24,12 @@ const Dashboard = () => {
     const [recentAttendance, setRecentAttendance] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const [dashboardEntries, setDashboardEntries] = useState([]);
+    const [entriesLoading, setEntriesLoading] = useState(true);
+    const [entryTitle, setEntryTitle] = useState('');
+    const [entryMessage, setEntryMessage] = useState('');
+    const [entrySaving, setEntrySaving] = useState(false);
+
     useEffect(() => {
         const fetchStats = async () => {
             setLoading(true);
@@ -38,7 +43,7 @@ const Dashboard = () => {
                     api.project.getActive(),
                     api.leave.getPending(),
                     api.attendance.getByDate(new Date().toLocaleDateString('en-CA')),
-                    api.payroll.getTotal(currentMonth, currentYear)
+                    api.payroll.getTotalForMonth(currentMonth, currentYear)
                 ]);
 
                 setStats({
@@ -46,7 +51,7 @@ const Dashboard = () => {
                     activeProjects: projectsRes.status === 'fulfilled' ? (Array.isArray(projectsRes.value) ? projectsRes.value.length : 0) : 'Error',
                     pendingLeaves: leavesRes.status === 'fulfilled' ? (Array.isArray(leavesRes.value) ? leavesRes.value.length : 0) : 'Error',
                     todayAttendance: attendanceRes.status === 'fulfilled' ? (Array.isArray(attendanceRes.value) ? attendanceRes.value.length : 0) : 'Error',
-                    totalPayroll: payrollTotalRes.status === 'fulfilled' ? (payrollTotalRes.value.totalPayroll || 0) : 0
+                    totalPayroll: payrollTotalRes.status === 'fulfilled' ? (Number(payrollTotalRes.value?.totalPayroll) || 0) : 0
                 });
 
                 if (attendanceRes.status === 'fulfilled') {
@@ -61,6 +66,58 @@ const Dashboard = () => {
 
         fetchStats();
     }, []);
+
+    useEffect(() => {
+        const fetchEntries = async () => {
+            setEntriesLoading(true);
+            try {
+                const data = await api.dashboard.getEntries();
+                setDashboardEntries(Array.isArray(data) ? data : []);
+            } catch (err) {
+                console.error('Error fetching dashboard entries:', err);
+                setDashboardEntries([]);
+            } finally {
+                setEntriesLoading(false);
+            }
+        };
+
+        fetchEntries();
+    }, []);
+
+    const handleAddEntry = async (e) => {
+        e.preventDefault();
+        const title = entryTitle.trim();
+        const message = entryMessage.trim();
+
+        if (!title) {
+            alert('Title is required.');
+            return;
+        }
+
+        setEntrySaving(true);
+        try {
+            const created = await api.dashboard.createEntry({ title, message: message || null });
+            if (created) {
+                setDashboardEntries((prev) => [created, ...prev]);
+            }
+            setEntryTitle('');
+            setEntryMessage('');
+        } catch (err) {
+            alert('Error adding entry: ' + err.message);
+        } finally {
+            setEntrySaving(false);
+        }
+    };
+
+    const handleDeleteEntry = async (id) => {
+        if (!window.confirm('Delete this dashboard entry?')) return;
+        try {
+            await api.dashboard.deleteEntry(id);
+            setDashboardEntries((prev) => prev.filter((e) => e.id !== id));
+        } catch (err) {
+            alert('Error deleting entry: ' + err.message);
+        }
+    };
 
     const cards = [
         { title: 'Total Employees', value: stats.totalEmployees, icon: <Users color="#4FD1C5" />, bg: '#4FD1C520', link: '/employees' },
@@ -78,23 +135,15 @@ const Dashboard = () => {
                 <p className="breadcrumb">Main / <span>Dashboard</span></p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+            <div className="dashboard-stat-cards">
                 {cards.map((card, i) => (
-                    <Link to={card.link} key={i} className="card" style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                                <p style={{ fontSize: '13px', color: '#718096', marginBottom: '8px', fontWeight: '500' }}>{card.title}</p>
-                                <h2 style={{ fontSize: '28px', color: '#2d3748', margin: 0 }}>{loading ? '...' : card.value}</h2>
+                    <Link to={card.link} key={i} className="card stat-card">
+                        <div className="stat-card-content">
+                            <div className="stat-card-text">
+                                <p className="stat-card-label">{card.title}</p>
+                                <h2 className="stat-card-value">{loading ? '...' : card.value}</h2>
                             </div>
-                            <div style={{
-                                width: '50px',
-                                height: '50px',
-                                borderRadius: '12px',
-                                background: card.bg,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}>
+                            <div className="stat-card-icon" style={{ background: card.bg }}>
                                 {React.cloneElement(card.icon, { size: 24 })}
                             </div>
                         </div>
@@ -102,13 +151,13 @@ const Dashboard = () => {
                 ))}
             </div>
 
-            <div className="dashboard-grid" style={{ gridTemplateColumns: '2fr 1fr' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="dashboard-grid">
+                <div className="dashboard-left">
                     {/* Recent Activity Table */}
                     <section className="card">
-                        <div className="card-title" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <div className="card-title-row">
                             <span>Recent Attendance Activity</span>
-                            <Link to="/attendance" style={{ fontSize: '12px', color: '#3476E1', textDecoration: 'none' }}>View All</Link>
+                            <Link to="/attendance" className="view-all-link">View All</Link>
                         </div>
                         <div className="table-wrapper">
                             <table>
@@ -122,21 +171,17 @@ const Dashboard = () => {
                                 <tbody>
                                     {recentAttendance.map((record, idx) => (
                                         <tr key={idx}>
-                                            <td style={{ fontWeight: '600' }}>{record.employee?.firstName} {record.employee?.lastName}</td>
-                                            <td>{record.punchIn ? new Date(record.punchIn).toLocaleTimeString() : '-'}</td>
-                                            <td>
-                                                <span style={{
-                                                    padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold',
-                                                    background: record.punchOut ? '#FC818120' : '#48bb7820',
-                                                    color: record.punchOut ? '#FC8181' : '#48bb78'
-                                                }}>
+                                            <td className="employee-name">{record.employee?.firstName} {record.employee?.lastName}</td>
+                                            <td className="punch-time">{record.punchIn ? new Date(record.punchIn).toLocaleTimeString() : '-'}</td>
+                                            <td className="status-cell">
+                                                <span className={`status-badge ${record.punchOut ? 'status-out' : 'status-active'}`}>
                                                     {record.punchOut ? 'Punched Out' : 'Active'}
                                                 </span>
                                             </td>
                                         </tr>
                                     ))}
                                     {recentAttendance.length === 0 && (
-                                        <tr><td colSpan="3" style={{ textAlign: 'center', padding: '20px', color: '#718096' }}>No entries for today yet</td></tr>
+                                        <tr><td colSpan="3" className="empty-message">No entries for today yet</td></tr>
                                     )}
                                 </tbody>
                             </table>
@@ -145,37 +190,106 @@ const Dashboard = () => {
 
                     <section className="card">
                         <div className="card-title">System Status</div>
-                        <div style={{ padding: '20px', textAlign: 'center' }}>
-                            <div style={{ marginBottom: '20px' }}>
-                                <CheckCircle size={48} color="#48bb78" style={{ marginBottom: '10px' }} />
-                                <h3>All Systems Operational</h3>
-                                <p style={{ color: '#718096' }}>Backend connected to MySQL database</p>
-                            </div>
+                        <div className="system-status-content">
+                            <CheckCircle size={48} color="#48bb78" />
+                            <h3>All Systems Operational</h3>
+                            <p>Backend connected to MySQL database</p>
                         </div>
                     </section>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="dashboard-right">
                     <PunchCard />
 
                     <section className="card">
                         <div className="card-title">Quick Actions</div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <button className="punch-btn" style={{ width: '100%', marginBottom: 0 }} onClick={() => navigate('/employees')}>Add New Employee</button>
-                            <button className="punch-btn" style={{ width: '100%', background: '#4299e1' }} onClick={() => navigate('/projects')}>Create Project</button>
+                        <div className="quick-actions-container">
+                            <button className="punch-btn btn-primary" onClick={() => navigate('/employees')}>Add New Employee</button>
+                            <button className="punch-btn btn-secondary" onClick={() => navigate('/projects')}>Create Project</button>
+                        </div>
+                    </section>
+
+                    <section className="card">
+                        <div className="card-title">Dashboard Entries</div>
+
+                        <form onSubmit={handleAddEntry} className="dashboard-entry-form">
+                            <label className="form-label">Title</label>
+                            <input
+                                value={entryTitle}
+                                onChange={(e) => setEntryTitle(e.target.value)}
+                                placeholder="e.g., Team meeting at 3 PM"
+                                className="form-control"
+                            />
+
+                            <label className="form-label">Message (optional)</label>
+                            <textarea
+                                value={entryMessage}
+                                onChange={(e) => setEntryMessage(e.target.value)}
+                                placeholder="Add a short note..."
+                                rows={3}
+                                className="form-textarea"
+                            />
+
+                            <button
+                                type="submit"
+                                className="punch-btn btn-primary btn-submit"
+                                disabled={entrySaving}
+                            >
+                                <Plus size={18} />
+                                {entrySaving ? 'Saving...' : 'Add Entry'}
+                            </button>
+                        </form>
+
+                        <div className="entries-list">
+                            {entriesLoading && (
+                                <div className="loading-message">Loading entries...</div>
+                            )}
+
+                            {!entriesLoading && dashboardEntries.length === 0 && (
+                                <div className="empty-message">No entries yet</div>
+                            )}
+
+                            {!entriesLoading && dashboardEntries.map((entry) => (
+                                <div key={entry.id} className="entry-item">
+                                    <div className="entry-content">
+                                        <div className="entry-title">
+                                            {entry.title}
+                                        </div>
+                                        {entry.message && (
+                                            <div className="entry-message">
+                                                {entry.message}
+                                            </div>
+                                        )}
+                                        {entry.createdAt && (
+                                            <div className="entry-time">
+                                                {String(entry.createdAt).replace('T', ' ')}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDeleteEntry(entry.id)}
+                                        title="Delete entry"
+                                        className="delete-btn"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            ))}
                         </div>
                     </section>
 
                     <section className="card">
                         <div className="card-title">Summary Statistics</div>
-                        <div style={{ padding: '5px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                <span style={{ color: '#718096' }}>Database Link</span>
-                                <span style={{ color: '#48bb78', fontWeight: 'bold' }}>Active</span>
+                        <div className="summary-stats">
+                            <div className="summary-item">
+                                <span className="stat-label">Database Link</span>
+                                <span className="stat-status active">Active</span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                <span style={{ color: '#718096' }}>API Server</span>
-                                <span style={{ color: '#48bb78', fontWeight: 'bold' }}>Online</span>
+                            <div className="summary-item">
+                                <span className="stat-label">API Server</span>
+                                <span className="stat-status active">Online</span>
                             </div>
                         </div>
                     </section>

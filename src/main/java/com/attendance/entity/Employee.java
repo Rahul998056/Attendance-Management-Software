@@ -12,6 +12,10 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "admin_id", nullable = false)
+    private AdminCredential admin;
+
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -51,6 +55,14 @@ public class Employee {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public AdminCredential getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(AdminCredential admin) {
+        this.admin = admin;
     }
 
     public User getUser() {

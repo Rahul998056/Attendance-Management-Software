@@ -1,11 +1,13 @@
 package com.attendance.repository;
 
+import com.attendance.entity.AdminCredential;
 import com.attendance.entity.Project;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
@@ -59,4 +61,11 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     default List<Project> findActiveProjects() {
         return findByStatus("ACTIVE");
     }
+    
+    // Admin-filtered queries
+    List<Project> findByAdmin(AdminCredential admin);
+    
+    List<Project> findByAdminAndStatus(AdminCredential admin, String status);
+    
+    Optional<Project> findByAdminAndId(AdminCredential admin, Long id);
 }

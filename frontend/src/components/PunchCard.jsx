@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { Clock, Fingerprint, LogIn, LogOut, Coffee } from 'lucide-react';
+import '../styles/PunchCard.css';
 
 const PunchCard = () => {
     const [employees, setEmployees] = useState([]);
@@ -68,38 +69,30 @@ const PunchCard = () => {
         }
     };
 
+    const isShiftCompleted = currentAttendance && currentAttendance.punchOut;
+    const isPunchDisabled = loading || !selectedEmployeeId || isShiftCompleted;
+
     return (
-        <div className="card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="card punch-card">
+            <div className="card-title punch-card-title">
                 <Fingerprint size={20} color="#3476E1" />
                 <span>Attendance Punch</span>
             </div>
 
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '10px 0' }}>
-                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                    <div style={{ fontSize: '42px', fontWeight: 'bold', letterSpacing: '2px', color: '#2d3748' }}>
-                        {stats.time}
-                    </div>
-                    <div style={{
-                        display: 'inline-block',
-                        padding: '4px 12px',
-                        borderRadius: '20px',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        background: currentAttendance ? (currentAttendance.punchOut ? '#FC818120' : '#48bb7820') : '#E2E8F0',
-                        color: currentAttendance ? (currentAttendance.punchOut ? '#FC8181' : '#48bb78') : '#718096'
-                    }}>
+            <div className="punch-card-content">
+                <div className="punch-card-time">
+                    <div className="punch-time">{stats.time}</div>
+                    <div className={`punch-status ${isShiftCompleted ? 'status-out' : currentAttendance ? 'status-active' : 'status-idle'}`}>
                         {stats.status}
                     </div>
                 </div>
 
-                <div style={{ marginBottom: '20px' }}>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#718096', marginBottom: '6px' }}>Verify Employee</label>
+                <div className="punch-card-employee">
+                    <label className="form-label">Verify Employee</label>
                     <select
                         value={selectedEmployeeId}
                         onChange={(e) => setSelectedEmployeeId(e.target.value)}
                         className="form-control"
-                        style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #F7FAFC', background: '#FAFBFF' }}
                     >
                         <option value="">-- Choose Name --</option>
                         {employees.map(emp => (
@@ -110,24 +103,8 @@ const PunchCard = () => {
 
                 <button
                     onClick={handlePunch}
-                    disabled={loading || !selectedEmployeeId || (currentAttendance && currentAttendance.punchOut)}
-                    style={{
-                        width: '100%',
-                        padding: '16px',
-                        borderRadius: '12px',
-                        border: 'none',
-                        background: 'linear-gradient(135deg, #3476E1 0%, #2D3748 100%)',
-                        color: 'white',
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '10px',
-                        cursor: (loading || !selectedEmployeeId || (currentAttendance && currentAttendance.punchOut)) ? 'not-allowed' : 'pointer',
-                        opacity: (loading || !selectedEmployeeId || (currentAttendance && currentAttendance.punchOut)) ? 0.7 : 1,
-                        transition: 'all 0.3s ease',
-                        boxShadow: '0 4px 15px rgba(52, 118, 225, 0.3)'
-                    }}
+                    disabled={isPunchDisabled}
+                    className={`punch-action-btn ${isShiftCompleted ? 'btn-disabled' : currentAttendance && !currentAttendance.punchOut ? 'btn-out' : 'btn-in'}`}
                 >
                     {currentAttendance && !currentAttendance.punchOut ? (
                         <>
@@ -142,8 +119,8 @@ const PunchCard = () => {
                     )}
                 </button>
 
-                {(currentAttendance && currentAttendance.punchOut) && (
-                    <p style={{ textAlign: 'center', fontSize: '11px', color: '#718096', marginTop: '12px' }}>
+                {isShiftCompleted && (
+                    <p className="shift-completed-msg">
                         Shift completed for today.
                     </p>
                 )}

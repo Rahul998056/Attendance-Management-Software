@@ -21,13 +21,21 @@ public class LeaveController {
     @Autowired
     private LeaveService leaveService;
 
+    @Autowired
+    private com.attendance.service.JwtUtil jwtUtil;
+
     /**
      * Get all leave requests
      * GET /api/leaves
      */
     @GetMapping
-    public ResponseEntity<List<Leave>> getAllLeaves() {
-        List<Leave> leaves = leaveService.getAllLeaves();
+    public ResponseEntity<List<Leave>> getAllLeaves(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        String token = jwtUtil.extractTokenFromHeader(authHeader);
+        if (token == null || !jwtUtil.isTokenValid(token)) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid or missing token");
+        }
+        Long adminId = jwtUtil.extractAdminId(token);
+        List<Leave> leaves = leaveService.getAllLeaves(adminId);
         return ResponseEntity.ok(leaves);
     }
 
@@ -36,8 +44,14 @@ public class LeaveController {
      * GET /api/leaves/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Leave> getLeaveById(@PathVariable Long id) {
-        Leave leave = leaveService.getLeaveById(id);
+    public ResponseEntity<Leave> getLeaveById(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                              @PathVariable Long id) {
+        String token = jwtUtil.extractTokenFromHeader(authHeader);
+        if (token == null || !jwtUtil.isTokenValid(token)) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid or missing token");
+        }
+        Long adminId = jwtUtil.extractAdminId(token);
+        Leave leave = leaveService.getLeaveById(adminId, id);
         return ResponseEntity.ok(leave);
     }
 
@@ -46,8 +60,14 @@ public class LeaveController {
      * GET /api/leaves/employee/{employeeId}
      */
     @GetMapping("/employee/{employeeId}")
-    public ResponseEntity<List<Leave>> getLeavesByEmployeeId(@PathVariable Long employeeId) {
-        List<Leave> leaves = leaveService.getLeavesByEmployeeId(employeeId);
+    public ResponseEntity<List<Leave>> getLeavesByEmployeeId(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                                             @PathVariable Long employeeId) {
+        String token = jwtUtil.extractTokenFromHeader(authHeader);
+        if (token == null || !jwtUtil.isTokenValid(token)) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid or missing token");
+        }
+        Long adminId = jwtUtil.extractAdminId(token);
+        List<Leave> leaves = leaveService.getLeavesByEmployeeId(adminId, employeeId);
         return ResponseEntity.ok(leaves);
     }
 
@@ -56,8 +76,14 @@ public class LeaveController {
      * GET /api/leaves/status/{status}
      */
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<Leave>> getLeavesByStatus(@PathVariable String status) {
-        List<Leave> leaves = leaveService.getLeavesByStatus(status);
+    public ResponseEntity<List<Leave>> getLeavesByStatus(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                                         @PathVariable String status) {
+        String token = jwtUtil.extractTokenFromHeader(authHeader);
+        if (token == null || !jwtUtil.isTokenValid(token)) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid or missing token");
+        }
+        Long adminId = jwtUtil.extractAdminId(token);
+        List<Leave> leaves = leaveService.getLeavesByStatus(adminId, status);
         return ResponseEntity.ok(leaves);
     }
 
@@ -66,8 +92,13 @@ public class LeaveController {
      * GET /api/leaves/pending
      */
     @GetMapping("/pending")
-    public ResponseEntity<List<Leave>> getPendingLeaves() {
-        List<Leave> leaves = leaveService.getPendingLeaves();
+    public ResponseEntity<List<Leave>> getPendingLeaves(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        String token = jwtUtil.extractTokenFromHeader(authHeader);
+        if (token == null || !jwtUtil.isTokenValid(token)) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid or missing token");
+        }
+        Long adminId = jwtUtil.extractAdminId(token);
+        List<Leave> leaves = leaveService.getPendingLeaves(adminId);
         return ResponseEntity.ok(leaves);
     }
 
@@ -76,10 +107,15 @@ public class LeaveController {
      * GET /api/leaves/employee/{employeeId}/status/{status}
      */
     @GetMapping("/employee/{employeeId}/status/{status}")
-    public ResponseEntity<List<Leave>> getLeavesByEmployeeAndStatus(
+    public ResponseEntity<List<Leave>> getLeavesByEmployeeAndStatus(@RequestHeader(value = "Authorization", required = false) String authHeader,
             @PathVariable Long employeeId,
             @PathVariable String status) {
-        List<Leave> leaves = leaveService.getLeavesByEmployeeAndStatus(employeeId, status);
+        String token = jwtUtil.extractTokenFromHeader(authHeader);
+        if (token == null || !jwtUtil.isTokenValid(token)) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid or missing token");
+        }
+        Long adminId = jwtUtil.extractAdminId(token);
+        List<Leave> leaves = leaveService.getLeavesByEmployeeAndStatus(adminId, employeeId, status);
         return ResponseEntity.ok(leaves);
     }
 
@@ -88,8 +124,14 @@ public class LeaveController {
      * GET /api/leaves/type/{leaveType}
      */
     @GetMapping("/type/{leaveType}")
-    public ResponseEntity<List<Leave>> getLeavesByType(@PathVariable String leaveType) {
-        List<Leave> leaves = leaveService.getLeavesByType(leaveType);
+    public ResponseEntity<List<Leave>> getLeavesByType(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                                       @PathVariable String leaveType) {
+        String token = jwtUtil.extractTokenFromHeader(authHeader);
+        if (token == null || !jwtUtil.isTokenValid(token)) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid or missing token");
+        }
+        Long adminId = jwtUtil.extractAdminId(token);
+        List<Leave> leaves = leaveService.getLeavesByType(adminId, leaveType);
         return ResponseEntity.ok(leaves);
     }
 
@@ -110,8 +152,14 @@ public class LeaveController {
      * POST /api/leaves
      */
     @PostMapping
-    public ResponseEntity<Leave> createLeave(@RequestBody Leave leave) {
-        Leave createdLeave = leaveService.createLeave(leave);
+    public ResponseEntity<Leave> createLeave(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                             @RequestBody Leave leave) {
+        String token = jwtUtil.extractTokenFromHeader(authHeader);
+        if (token == null || !jwtUtil.isTokenValid(token)) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid or missing token");
+        }
+        Long adminId = jwtUtil.extractAdminId(token);
+        Leave createdLeave = leaveService.createLeave(adminId, leave);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdLeave);
     }
 
@@ -120,8 +168,14 @@ public class LeaveController {
      * PUT /api/leaves/{id}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Leave> updateLeave(@PathVariable Long id, @RequestBody Leave leaveDetails) {
-        Leave updatedLeave = leaveService.updateLeave(id, leaveDetails);
+    public ResponseEntity<Leave> updateLeave(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                             @PathVariable Long id, @RequestBody Leave leaveDetails) {
+        String token = jwtUtil.extractTokenFromHeader(authHeader);
+        if (token == null || !jwtUtil.isTokenValid(token)) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid or missing token");
+        }
+        Long adminId = jwtUtil.extractAdminId(token);
+        Leave updatedLeave = leaveService.updateLeave(adminId, id, leaveDetails);
         return ResponseEntity.ok(updatedLeave);
     }
 
@@ -130,8 +184,14 @@ public class LeaveController {
      * PATCH /api/leaves/{id}/approve
      */
     @PatchMapping("/{id}/approve")
-    public ResponseEntity<Leave> approveLeave(@PathVariable Long id) {
-        Leave approvedLeave = leaveService.approveLeave(id);
+    public ResponseEntity<Leave> approveLeave(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                              @PathVariable Long id) {
+        String token = jwtUtil.extractTokenFromHeader(authHeader);
+        if (token == null || !jwtUtil.isTokenValid(token)) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid or missing token");
+        }
+        Long adminId = jwtUtil.extractAdminId(token);
+        Leave approvedLeave = leaveService.approveLeave(adminId, id);
         return ResponseEntity.ok(approvedLeave);
     }
 
@@ -140,8 +200,14 @@ public class LeaveController {
      * PATCH /api/leaves/{id}/reject
      */
     @PatchMapping("/{id}/reject")
-    public ResponseEntity<Leave> rejectLeave(@PathVariable Long id) {
-        Leave rejectedLeave = leaveService.rejectLeave(id);
+    public ResponseEntity<Leave> rejectLeave(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                             @PathVariable Long id) {
+        String token = jwtUtil.extractTokenFromHeader(authHeader);
+        if (token == null || !jwtUtil.isTokenValid(token)) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid or missing token");
+        }
+        Long adminId = jwtUtil.extractAdminId(token);
+        Leave rejectedLeave = leaveService.rejectLeave(adminId, id);
         return ResponseEntity.ok(rejectedLeave);
     }
 
@@ -150,8 +216,14 @@ public class LeaveController {
      * DELETE /api/leaves/{id}
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteLeave(@PathVariable Long id) {
-        leaveService.deleteLeave(id);
+    public ResponseEntity<Void> deleteLeave(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                            @PathVariable Long id) {
+        String token = jwtUtil.extractTokenFromHeader(authHeader);
+        if (token == null || !jwtUtil.isTokenValid(token)) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid or missing token");
+        }
+        Long adminId = jwtUtil.extractAdminId(token);
+        leaveService.deleteLeave(adminId, id);
         return ResponseEntity.noContent().build();
     }
 

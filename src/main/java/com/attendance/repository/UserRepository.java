@@ -1,5 +1,6 @@
 package com.attendance.repository;
 
+import com.attendance.entity.AdminCredential;
 import com.attendance.entity.Role;
 import com.attendance.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,6 +27,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return Optional containing the user if found
      */
     Optional<User> findByEmail(String email);
+    
+    // Admin-filtered queries
+    List<User> findByAdmin(AdminCredential admin);
+    
+    Optional<User> findByAdminAndId(AdminCredential admin, Long id);
+    
+    Optional<User> findByAdminAndUsername(AdminCredential admin, String username);
+    
+    Optional<User> findByAdminAndEmail(AdminCredential admin, String email);
+    
+    List<User> findByAdminAndRole(AdminCredential admin, Role role);
 
     /**
      * Find user by username or email (for login)

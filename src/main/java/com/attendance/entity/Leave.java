@@ -12,6 +12,10 @@ public class Leave {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "admin_id", nullable = false)
+    private AdminCredential admin;
+
+    @ManyToOne
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
@@ -41,6 +45,14 @@ public class Leave {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public AdminCredential getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(AdminCredential admin) {
+        this.admin = admin;
     }
 
     public Employee getEmployee() {

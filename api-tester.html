@@ -186,16 +186,6 @@
         </div>
 
         <div class="section">
-            <h2>☕ Break Management</h2>
-            <div class="button-group">
-                <input type="number" id="attendanceId" placeholder="Attendance ID" value="1" style="width: 140px;">
-                <button class="btn-success" onclick="startBreak()">Start Break</button>
-                <input type="number" id="breakId" placeholder="Break ID" value="1" style="width: 100px;">
-                <button class="btn-warning" onclick="endBreak()">End Break</button>
-            </div>
-        </div>
-
-        <div class="section">
             <h2>📁 Projects</h2>
             <div class="button-group">
                 <button class="btn-info" onclick="getProjects()">Get All Projects</button>
@@ -327,16 +317,6 @@
 
         async function getAttendance() {
             await apiCall('/attendance');
-        }
-
-        async function startBreak() {
-            const attId = document.getElementById('attendanceId').value;
-            await apiCall(`/breaks/start/${attId}`, { method: 'POST' });
-        }
-
-        async function endBreak() {
-            const brkId = document.getElementById('breakId').value;
-            await apiCall(`/breaks/end/${brkId}`, { method: 'PUT' });
         }
 
         async function getProjects() {

@@ -11,6 +11,10 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "admin_id", nullable = false)
+    private AdminCredential admin;
+
     @Column(nullable = false, unique = true, length = 100)
     private String username;
 
@@ -34,7 +38,8 @@ public class User {
     public User() {
     }
 
-    public User(String username, String email, String password, Role role) {
+    public User(AdminCredential admin, String username, String email, String password, Role role) {
+        this.admin = admin;
         this.username = username;
         this.email = email;
         this.password = password;
@@ -48,6 +53,14 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public AdminCredential getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(AdminCredential admin) {
+        this.admin = admin;
     }
 
     public String getUsername() {

@@ -14,10 +14,14 @@ public class Attendance {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "admin_id", nullable = false)
+    private AdminCredential admin;
+
+    @ManyToOne
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
 
-    @Column(name = "attendance_date", nullable = false)
+    @Column(name = "attendance_date")
     private LocalDate attendanceDate;
 
     @Column(name = "punch_in")
@@ -49,6 +53,14 @@ public class Attendance {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public AdminCredential getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(AdminCredential admin) {
+        this.admin = admin;
     }
 
     public Employee getEmployee() {
